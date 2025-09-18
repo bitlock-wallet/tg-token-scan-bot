@@ -1,0 +1,96 @@
+version: "3.8"
+
+services:
+  tg-token-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tg-token-scan-bot
+    restart: unless-stopped
+    image: bitlockwallet/telegram-scan-bot
+    environment:
+      # Telegram Bot Configuration
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+
+      # Network RPC URLs
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL:-https://api.mainnet-beta.solana.com}
+      - ETHEREUM_RPC_URL=${ETHEREUM_RPC_URL:-https://eth-mainnet.g.alchemy.com/v2/your_key_here}
+      - BSC_RPC_URL=${BSC_RPC_URL:-https://bsc-dataseed.binance.org}
+
+      # API Keys and URLs
+      - HELIUS_API_KEY=${HELIUS_API_KEY}
+      - DEXSCREENER_API_URL=${DEXSCREENER_API_URL:-https://api.dexscreener.com}
+      - HONEYPOT_API_URL=${HONEYPOT_API_URL:-https://api.honeypot.is}
+
+      # Node.js Environment
+      - NODE_ENV=${NODE_ENV:-production}
+    env_file:
+      - .env
+    volumes:
+      # Optional: Mount logs directory for persistent logging
+      - ./logs:/app/logs
+    networks:
+      - bot-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('Bot is healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Resource limits to prevent excessive usage
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+
+networks:
+  bot-network:
+    driver: bridge
+# Optional: If you want to add monitoring or logging services
+# Uncomment the sections below to add them
+
+# For production monitoring (optional)
+# volumes:
+#   prometheus_data:
+#   grafana_data:
+
+# services:
+#   # ... existing tg-token-bot service above ...
+
+#   # Optional: Prometheus for monitoring
+#   prometheus:
+#     image: prom/prometheus:latest
+#     container_name: prometheus
+#     restart: unless-stopped
+#     ports:
+#       - "9090:9090"
+#     volumes:
+#       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+#       - prometheus_data:/prometheus
+#     command:
+#       - '--config.file=/etc/prometheus/prometheus.yml'
+#       - '--storage.tsdb.path=/prometheus'
+#       - '--web.console.libraries=/etc/prometheus/console_libraries'
+#       - '--web.console.templates=/etc/prometheus/consoles'
+#       - '--storage.tsdb.retention.time=200h'
+#       - '--web.enable-lifecycle'
+#     networks:
+#       - bot-network
+
+#   # Optional: Grafana for dashboards
+#   grafana:
+#     image: grafana/grafana:latest
+#     container_name: grafana
+#     restart: unless-stopped
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+#     volumes:
+#       - grafana_data:/var/lib/grafana
+#     networks:
+#       - bot-network

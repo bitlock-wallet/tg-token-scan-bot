@@ -1,0 +1,20 @@
+{
+  "name": "tg-token-scan-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot for scanning token information",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js",
+    "dev": "node --watch src/bot.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "keywords": ["telegram", "bot", "crypto", "token", "scanner"],
+  "author": "",
+  "license": "MIT"
+}
+
+
